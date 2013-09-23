@@ -98,6 +98,14 @@ buffer.")
           (backward-char)
           (insert (concat "\n" output "")))))))
 
+(defun skewer-repl-clear ()
+  "Clear all messages in skewer"
+  (interactive)
+  (save-excursion
+    (goto-char (point-max))
+    (forward-line 0)
+    (delete-region (point-min) (point))))
+
 ;;;###autoload
 (defun skewer-repl--response-hook (response)
   "Catches all browser messages logging some to the REPL."
