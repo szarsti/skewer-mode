@@ -246,6 +246,31 @@ skewer.fn.fetchselector = function(request) {
     }
 }());
 
+skewer.stringifyNode = function(node) {
+    return "<" + node.tagName +
+        node.id ? ' id="' + node.id + '"' : "" +
+        node.className ? ' class="' + node.className + '"' : "" +
+        node.childNodes.length ? (">...</" + node.tagName) : "" +
+        ">";
+};
+
+skewer.stringifyFunction = function(fn) {
+    return "[function " + (fn.name || "(anonymous)") + "]";
+};
+
+skewer.stringifyDate = function(date) {
+    return "[object Date(" + date.toString() + ")]";
+};
+
+skewer.stringifyObject = function(obj) {
+    try {
+        var name = Object.getPrototypeOf(obj).constructor.name;
+        return name ? "[object " + name + "]" : Object.prototype.toString.call(obj);
+    } catch (error) {
+        return "[object Object]";
+    }
+};
+
 /**
  * Stringify a potentially circular object without throwing an exception.
  * @param object The object to be printed.
@@ -278,19 +303,27 @@ skewer.safeStringify = function (object, verbose) {
                 }).join(", ") + "]";
             }
         } else if (typeof obj === "string") {
-            return JSON.stringify(obj);
+            if (verbose) {
+                return JSON.stringify(obj);
+            } else {
+                return "\"" + obj + "\"";
+            }
         } else if (obj instanceof Node) {
-            return obj.toString();  // DOM elements can't stringify
+            if (verbose) {
+                return obj.toString();  // DOM elements can't stringify
+            } else {
+                return skewer.stringifyNode(obj);
+            }
         } else if (typeof obj === "function") {
             if (verbose)
                 return obj.toString();
             else
-                return "Function";
+                return skewer.stringifyFunction(obj);
         } else if (Object.prototype.toString.call(obj) === '[object Date]') {
             if (verbose)
                 return JSON.stringify(obj);
             else
-                return obj.toString();
+                return skewer.stringifyDate(obj);
         } else {
             if (verbose) {
                 if (seen.indexOf(obj) >= 0)
@@ -307,11 +340,7 @@ skewer.safeStringify = function (object, verbose) {
                 }
                 return "{" + pairs.join(',') + "}";
             } else {
-                try {
-                    return obj.toString();
-                } catch (error) {
-                    return ({}).toString();
-                }
+                return skewer.stringifyObject(obj);
             }
         }
     };
