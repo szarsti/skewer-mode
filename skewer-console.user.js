@@ -10,6 +10,13 @@
 // ==/UserScript==
 
 (function runner(doc, console) {
+   "use strict";
+
+   /* Don't use on iframes. */
+   if (window.top !== window.self) {
+      return;
+   } 
+
    var host = 'https://localhost.ig.com',
        script = doc.createElement('script'),
        stash = [],
@@ -35,23 +42,21 @@
    }
 
    script.src =  host + '/skewer';
+   /*
    script.onload =  function onskewerload() {
       var i;
-      if (!('skewer' in window)) {
-         throw new Error("Skewer should be initialised by now");
-      }
       for (i = 0; i < stash.length; i ++) {
          skewer.log(stash[i]);
       }
       stash = null;
-   };
+   };*/
 
    doc.addEventListener('DOMNodeInserted', function(event) {
       if (!injected && event.target.parentNode.tagName == 'HEAD') {
          injected = true;
          event.target.parentNode.insertBefore(script, event.target);
-         decorate(console || {});
+         //decorate(console);
       }
    });
-})(document);
+})(document, console);
 
